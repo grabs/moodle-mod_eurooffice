@@ -35,9 +35,6 @@ class restore_eurooffice_activity_structure_step extends restore_activity_struct
         $userinfo = $this->get_setting_value('userinfo');
 
         $paths[] = new restore_path_element('eurooffice', '/activity/eurooffice');
-        if ($userinfo) {
-            $paths[] = new restore_path_element('eurooffice_document', '/activity/eurooffice/documents/document');
-        }
 
         // Return the paths wrapped into standard activity structure.
         return $this->prepare_activity_structure($paths);
@@ -69,6 +66,6 @@ class restore_eurooffice_activity_structure_step extends restore_activity_struct
     protected function after_execute() {
         // Add eurooffice related files.
         $this->add_related_files('mod_eurooffice', 'intro', null);
-        $this->add_related_files('mod_eurooffice', filesystem::FILEAREA, null);
+        $this->add_related_files('mod_eurooffice', filesystem::FILEAREA_INITIAL, null);
     }
 }

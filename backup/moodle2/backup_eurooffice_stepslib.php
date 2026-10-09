@@ -38,6 +38,7 @@ class backup_eurooffice_activity_structure_step extends backup_activity_structur
                 'name',
                 'intro',
                 'introformat',
+                'initialfiletype',
                 'timecreated',
                 'timemodified',
             ]
@@ -48,7 +49,7 @@ class backup_eurooffice_activity_structure_step extends backup_activity_structur
 
         // Define file annotations.
         $eurooffice->annotate_files('mod_eurooffice', 'intro', null); // This file area hasn't itemid.
-        $eurooffice->annotate_files('mod_eurooffice', filesystem::FILEAREA, null);
+        $eurooffice->annotate_files('mod_eurooffice', filesystem::FILEAREA_INITIAL, null);
 
         // Return the root element (eurooffice), wrapped into standard activity structure.
         return $this->prepare_activity_structure($eurooffice);

@@ -46,14 +46,11 @@ $PAGE->set_heading($course->fullname);
 
 echo $OUTPUT->header();
 
-// We need the record here, because the editor can not use a cm_info object!
-if ($cm instanceof cm_info) {
-    $cmrecord = $cm->get_course_module_record();
-}
-
 if (!\mod_eurooffice\api\api::test_connection($mycfg->url)) {
     \core\notification::error(get_string('error_connecting', 'mod_eurooffice'));
 } else {
+    mod_eurooffice\api\filesystem::store_file_from_initial($cm->id);
+
     $templatecontext = [
         'cmid' => $cmid,
     ];

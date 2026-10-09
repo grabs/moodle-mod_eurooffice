@@ -262,7 +262,7 @@ function eurooffice_get_coursemodule_info($coursemodule) {
     $files = $fs->get_area_files(
         $context->id,
         'mod_eurooffice',
-        filesystem::FILEAREA,
+        filesystem::FILEAREA_INITIAL,
         0,
         'id',
         false,

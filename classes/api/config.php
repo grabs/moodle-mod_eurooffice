@@ -128,7 +128,7 @@ class config {
         $document['url'] = $documenturl->out(false);
         $document['fileType'] = $filetype;
         $document['title'] = $filename;
-        $document['key'] = $this->file->get_pathnamehash(); // The pathnamehash is unique so it can be perfectly used here.
+        $document['key'] = $this->get_file_identifier(); // A unique identifier which changes after content changes.
         $document['permissions'] = $this->get_permissions();
 
         // Set up configuration for the document editor.
@@ -231,5 +231,16 @@ class config {
         }
 
         return $permissions;
+    }
+
+    /**
+     * Get an identifier for the file.
+     * This identifier must be unique and it should only change if the file content has been changed.
+     * So the simplest way is to combine the pathnamehash and the contenthash.
+     *
+     * @return string
+     */
+    protected function get_file_identifier() {
+        return $this->file->get_pathnamehash() . $this->file->get_contenthash();
     }
 }

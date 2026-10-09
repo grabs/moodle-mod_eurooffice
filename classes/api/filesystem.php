@@ -152,6 +152,21 @@ class filesystem {
     public static function store_file_from_initial(int $cmid) {
         $context = \context_module::instance($cmid);
         $fs    = get_file_storage();
+
+        // First check whether the file already exists.
+        $files = $fs->get_area_files(
+            $context->id, // Param contextid.
+            'mod_eurooffice', // Param component.
+            static::FILEAREA, // Param filearea.
+            false, // Param itemid.
+            '', // Param sort.
+            false // Param includedirs.
+        );
+        if ($file = reset($files)) {
+            return $file;
+        }
+
+        // Get the initial file and build the document file from it.
         $files = $fs->get_area_files(
             $context->id, // Param contextid.
             'mod_eurooffice', // Param component.

@@ -16,6 +16,8 @@
 
 namespace mod_eurooffice\api;
 
+use mod_eurooffice\log;
+
 /**
  * Editor class
  *
@@ -58,36 +60,51 @@ class api {
     protected $error;
 
     /**
+     * Get a curl instance respecting the connection settings.
+     * @return \curl
+     */
+    public static function get_curl() {
+        static $curl;
+        if (empty($curl)) {
+            $mycfg = get_config('mod_eurooffice');
+            $curlsettings = [];
+            if (!empty($mycfg->alloweuroofficeserverexplicit)) {
+                $curlsettings = [
+                    'ignoresecurity' => true,
+                ];
+            }
+            // Initialize a new curl handle for the request.
+            $curl = new \curl($curlsettings);
+        }
+        return $curl;
+    }
+
+    /**
      * Tests the connection to a given URL.
      *
      * This method attempts to establish a connection to the specified URL and checks
-     * if the response status code is 200 (OK). It uses cURL with default timeout settings.
+     * if the response status code is 200 (OK). It uses curl with default timeout settings.
      *
-     * @param string $url The URL to test the connection against.
+     * @param string $baseurl The URL of the Euro-Office document server
      * @return bool Returns true if the connection is successful (HTTP 200), false otherwise.
      */
-    public static function test_connection($url): bool {
+    public static function test_connection($baseurl): bool {
         // Return false immediately if the provided URL is empty.
-        if (empty($url)) {
+        if (empty($baseurl)) {
             return false;
         }
+        $ch = static::get_curl();
 
-        // Initialize a new cURL handle for the request.
-        $ch = new \curl();
-
-        // Set the cURL options with default timeout values.
+        // Set the curl options with default timeout values.
         $curloptions = [];
         $curloptions['CURLOPT_CONNECTTIMEOUT'] = static::DEFAULT_CONNECTTIMEOUT;
         $curloptions['CURLOPT_TIMEOUT']        = static::DEFAULT_TIMEOUT;
 
+        $url = trim($baseurl, '/') . '/healthcheck';
+
         // Execute a GET request to the specified URL with the configured options.
-        $ch->get($url, [], $curloptions);
-
-        // Retrieve the request information, including the HTTP status code.
-        $info = $ch->get_info();
-
-        // Return true if the HTTP status code is 200, indicating a successful connection.
-        return $info['http_code'] == 200;
+        $result = $ch->get($url, [], $curloptions);
+        return $result == 'true';
     }
 
     /**
@@ -257,10 +274,7 @@ class api {
         // Download the file content from the provided URL.
         try {
             $tempfile = tempnam(make_temp_directory('/mod_eurooffice'), 'tmp');
-            $fileloaded = download_file_content(
-                url: $downloadurl,
-                tofile: $tempfile
-            );
+            $fileloaded = $this->download_file($downloadurl, $tempfile);
         } catch (\moodle_exception $e) {
             // Return false if any error occurs during the download or file operations.
             return false;
@@ -281,10 +295,11 @@ class api {
 
             // Delete the existing file before creating a new one with updated content.
             $file->delete();
+
             if ($fs->create_file_from_pathname($filerec, $tempfile)) {
                 unlink($tempfile);
+                return true;
             }
-            return true;
         }
         // Return false if any condition fails.
         return false;
@@ -327,5 +342,43 @@ class api {
     protected function send_response(json_response $response) {
         $response->send_headers();
         $response->out();
+    }
+
+    /**
+     * Downloads a file from a given URL and saves it to the specified filepath.
+     * This method is needed to download file from a server which has a blocked IP Adresse such as a local docker container.
+     * The curl object, used here, can be set to ignore the block list.
+     *
+     * @param string $url The URL from which the file will be downloaded.
+     * @param string $filepath The local path where the file will be saved.
+     * @return bool Returns true if the download and save operation was successful, false otherwise.
+     */
+    protected function download_file($url, $filepath) {
+        global $CFG;
+
+        // Open the file in write mode to save the downloaded content.
+        $fh = fopen($filepath, 'w');
+        if (!$fh) {
+            return false;
+        }
+
+        // Set curl options for the file download.
+        $options['CURLOPT_FILE'] = $fh;
+        $options['CURLOPT_CONNECTTIMEOUT'] = static::DEFAULT_CONNECTTIMEOUT;
+
+        $options['CURLOPT_TIMEOUT'] = static::DEFAULT_TIMEOUT;
+        $options['CURLOPT_RETURNTRANSFER'] = true;
+        $options['CURLOPT_NOBODY'] = false;
+
+        // Initialize curl and execute the download request.
+        $curl = static::get_curl();
+        $curl->get($url, null, $options);
+
+        // Close the file handle after writing the content.
+        fclose($fh);
+
+        // Set the appropriate file permissions as defined in the Moodle configuration.
+        @chmod($filepath, $CFG->filepermissions);
+        return true;
     }
 }

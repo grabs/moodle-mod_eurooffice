@@ -45,6 +45,20 @@ if ($hassiteconfig) {
         )
     );
 
+    $yesnooptions = [
+        0 => get_string('no'),
+        1 => get_string('yes'),
+    ];
+    $settings->add(
+        new \admin_setting_configselect(
+            'mod_eurooffice/alloweuroofficeserverexplicit',
+            get_string('allowcollaboraserverexplicit', 'mod_eurooffice'),
+            get_string('allowcollaboraserverexplicit_help', 'mod_eurooffice'),
+            0,
+            $yesnooptions
+        )
+    );
+
     $settings->add(
         new admin_setting_configselect(
             'mod_eurooffice/defaultfiletype',
