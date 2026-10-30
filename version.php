@@ -26,7 +26,7 @@
 defined('MOODLE_INTERNAL') || die();
 
 $plugin->component = 'mod_eurooffice';
-$plugin->version = 2026100900;
-$plugin->release = 'v1.0.0';
+$plugin->version = 2026103000;
+$plugin->release = 'v1.0.1';
 $plugin->requires = 2024100700;
 $plugin->maturity = MATURITY_BETA;
