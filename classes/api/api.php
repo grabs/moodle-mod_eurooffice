@@ -50,6 +50,11 @@ class api {
     /** Document actions */
     public const ACTION_DOCUMENTACTION = 'documentaction';
 
+    /**
+     * The plugin configuration
+     * @var \stdClass
+     */
+    protected $mycfg;
     /** @var \mod_eurooffice\crypt */
     protected $crypt;
     /** @var array */
@@ -70,6 +75,9 @@ class api {
         if (empty($curl)) {
             $mycfg = get_config('mod_eurooffice');
             $curlsettings = [];
+            // If the alloweuroofficeserverexplicit setting is enabled, ignore security checks.
+            // This is needed in environments where the eurooffice server runs with a local IP address.
+            // This often happens in Docker environments or in development systems.
             if (!empty($mycfg->alloweuroofficeserverexplicit)) {
                 $curlsettings = [
                     'ignoresecurity' => true,
@@ -79,6 +87,31 @@ class api {
             $curl = new \curl($curlsettings);
         }
         return $curl;
+    }
+
+    public static function calc_timeout($url) {
+        global $CFG;
+
+        // Attempt to get more correct timeout by fetching the file size.
+        if (!isset($CFG->curltimeoutkbitrate)) {
+            // Use very slow rate of 56kbps as a timeout speed when not set.
+            $bitrate = 56;
+        } else {
+            $bitrate = $CFG->curltimeoutkbitrate;
+        }
+
+        $curl = static::get_curl();
+        $curl->head($url);
+
+        $info = $curl->get_info();
+        $errno = $curl->get_errno();
+
+        $timeout = 300;
+        if (!$errno && $info['download_content_length'] > 0) {
+            // No curl errors - adjust for large files only - take max timeout.
+            $timeout = max($timeout, ceil($info['download_content_length'] * 8 / ($bitrate * 1024)));
+        }
+        return $timeout;
     }
 
     /**
@@ -167,6 +200,8 @@ class api {
 
         // Decode the JSON request body into an associative array.
         $this->requestdata = json_decode($this->requestbody, true);
+
+        $this->mycfg = get_config('mod_eurooffice');
     }
 
     /**
@@ -246,6 +281,17 @@ class api {
     protected function save_document_to_moodle() {
         // Get the download URL from the request data.
         $downloadurl = $this->requestdata['url'];
+        $downloadurl = new \moodle_url($downloadurl);
+        $euroofficeurl = new \moodle_url($this->mycfg->url);
+        if ($downloadurl->get_scheme() != $euroofficeurl->get_scheme()) {
+            return false;
+        }
+        if ($downloadurl->get_port() != $euroofficeurl->get_port()) {
+            return false;
+        }
+        if ($downloadurl->get_host() != $euroofficeurl->get_host()) {
+            return false;
+        }
 
         $fs = get_file_storage();
         if (!$file = $fs->get_file_by_hash($this->tokencontent->pathnamehash)) {
@@ -273,7 +319,7 @@ class api {
         // Download the file content from the provided URL.
         try {
             $tempfile = tempnam(make_temp_directory('/mod_eurooffice'), 'tmp');
-            $fileloaded = $this->download_file($downloadurl, $tempfile);
+            $fileloaded = $this->download_file($downloadurl->out(false), $tempfile);
         } catch (\moodle_exception $e) {
             // Return false if any error occurs during the download or file operations.
             return false;
@@ -365,7 +411,7 @@ class api {
         $options['CURLOPT_FILE'] = $fh;
         $options['CURLOPT_CONNECTTIMEOUT'] = static::DEFAULT_CONNECTTIMEOUT;
 
-        $options['CURLOPT_TIMEOUT'] = static::DEFAULT_TIMEOUT;
+        $options['CURLOPT_TIMEOUT'] = static::calc_timeout($url);
         $options['CURLOPT_RETURNTRANSFER'] = true;
         $options['CURLOPT_NOBODY'] = false;
 
@@ -376,8 +422,21 @@ class api {
         // Close the file handle after writing the content.
         fclose($fh);
 
-        // Set the appropriate file permissions as defined in the Moodle configuration.
-        @chmod($filepath, $CFG->filepermissions);
-        return true;
+        // Check the download result.
+        $info = $curl->get_info();
+        $errno = $curl->get_errno();
+        if ($errno !== 0 || $info['http_code'] !== 200) {
+            unlink($filepath);
+            throw new \moodle_exception('error:downloadfailed');
+        }
+
+        // Has the new file some content?
+        if (filesize($filepath) > 0) {
+            // Set the appropriate file permissions as defined in the Moodle configuration.
+            @chmod($filepath, $CFG->filepermissions);
+            return true;
+        }
+        unlink($filepath);
+        return false;
     }
 }

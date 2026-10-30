@@ -28,13 +28,12 @@ import log from 'core/log';
 /**
  * Initializes the EuroOffice editor with the given configuration.
  *
- * @param {integer} courseid - The courseid
  * @param {integer} contextid - The contextid of the module instance
  * @param {integer} cmid - The course module id
  * @param {string} courseUrl - URL to redirect to when closing the editor.
  * @returns {Promise<void>} Resolves when the editor is initialized.
  */
-export async function init(courseid, contextid, cmid, courseUrl) {
+export async function init(contextid, cmid, courseUrl) {
     /**
      * Loads the document editing API script asynchronously.
      * @returns {Promise<void>} Resolves when the script is loaded.
@@ -54,7 +53,7 @@ export async function init(courseid, contextid, cmid, courseUrl) {
     const configLoader = await import('mod_eurooffice/configloader');
     const userInfoLoader = await import('mod_eurooffice/userinfoloader');
     const str = await import('core/str');
-    const editorConfig = await configLoader.getEditorConfig(courseid, contextid, cmid);
+    const editorConfig = await configLoader.getEditorConfig(contextid);
 
     try {
         await loadApi();
@@ -91,7 +90,7 @@ export async function init(courseid, contextid, cmid, courseUrl) {
         if (!Array.isArray(userids)) {
             return;
         }
-        const userInfo = await userInfoLoader.getUserInfos(userids, contextid, cmid);
+        const userInfo = await userInfoLoader.getUserInfos(userids, contextid);
 
         docEditor.setUsers({
             c: c,

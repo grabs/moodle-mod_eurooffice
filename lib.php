@@ -287,21 +287,17 @@ function mod_eurooffice_output_fragment_get_editor_config($args) {
     global $DB;
 
     $contextid = $args['contextid'] ?? 0;
-    $courseid = $args['courseid'] ?? 0;
-    $cmid = $args['cmid'] ?? 0;
 
     if (empty($contextid)) {
         throw new \moodle_exception('Missing param "contextid"');
     }
-    if (empty($courseid)) {
-        throw new \moodle_exception('Missing param "courseid"');
-    }
-    if (empty($cmid)) {
-        throw new \moodle_exception('Missing param "cmid"');
-    }
 
     $context = \context::instance_by_id($contextid);
-    $cm = $DB->get_record('course_modules', ['id' => $cmid]);
+    if ($context->contextlevel !== CONTEXT_MODULE) {
+        throw new \moodle_exception('Invalid context');
+    }
+    $cm = $DB->get_record('course_modules', ['id' => $context->instanceid]);
+    $courseid = $cm->course;
 
     $apiconfig = new \mod_eurooffice\api\config($courseid, $context, $cm);
 
@@ -318,19 +314,18 @@ function mod_eurooffice_output_fragment_get_editor_config($args) {
 function mod_eurooffice_output_fragment_get_user_infos($args) {
     global $DB;
 
-    // $contextid = $args['contextid'] ?? 0;
+    $contextid = $args['contextid'] ?? 0;
     $userids = $args['userids'] ?? 0;
-    $cmid = $args['cmid'] ?? 0;
 
-    // if (empty($contextid)) {
-    //     throw new \moodle_exception('Missing param "contextid"');
-    // }
-    if (empty($cmid)) {
-        throw new \moodle_exception('Missing param "cmid"');
+    if (empty($contextid)) {
+        throw new \moodle_exception('Missing param "contextid"');
     }
 
-    // $context = \context::instance_by_id($contextid);
-    $cm = $DB->get_record('course_modules', ['id' => $cmid]);
+    $context = \context::instance_by_id($contextid);
+    if ($context->contextlevel !== CONTEXT_MODULE) {
+        throw new \moodle_exception('Invalid context');
+    }
+    $cm = $DB->get_record('course_modules', ['id' => $context->instanceid]);
 
     $userids = explode(',', $userids);
     if (empty($userids)) {

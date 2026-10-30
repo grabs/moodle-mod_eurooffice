@@ -60,7 +60,6 @@ if (!\mod_eurooffice\api\api::test_connection($mycfg->url)) {
         'mod_eurooffice/eurooffice_editor',
         'init',
         [
-            $course->id,
             $context->id,
             $cmid,
             $courseurl->out(),

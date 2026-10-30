@@ -45,6 +45,13 @@ if ($hassiteconfig) {
         )
     );
 
+    $helpcontent = $OUTPUT->render_from_template(
+        'mod_eurooffice/explicit_warning',
+        [
+            'text' => get_string('allowcollaboraserverexplicit_help','mod_eurooffice'),
+            'level' => 'danger',
+        ]
+    );
     $yesnooptions = [
         0 => get_string('no'),
         1 => get_string('yes'),
@@ -53,7 +60,7 @@ if ($hassiteconfig) {
         new \admin_setting_configselect(
             'mod_eurooffice/alloweuroofficeserverexplicit',
             get_string('allowcollaboraserverexplicit', 'mod_eurooffice'),
-            get_string('allowcollaboraserverexplicit_help', 'mod_eurooffice'),
+            $helpcontent,
             0,
             $yesnooptions
         )

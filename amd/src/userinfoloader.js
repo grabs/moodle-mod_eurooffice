@@ -30,14 +30,12 @@ import notification from 'core/notification';
  *
  * @param {array} userids
  * @param {Integer} contextid
- * @param {Integer} cmid
  * @returns {object} The document editor configuration object
  */
-export const getUserInfos = (userids, contextid, cmid) => {
+export const getUserInfos = (userids, contextid) => {
     const serviceparams = {
         userids: userids.join(','),
-        contextid: contextid,
-        cmid: cmid
+        contextid: contextid
     };
     var fragmentpromise = fragment.loadFragment('mod_eurooffice', 'get_user_infos', contextid, serviceparams);
     return fragmentpromise.then(function(userInfo) {
