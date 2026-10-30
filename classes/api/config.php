@@ -18,6 +18,7 @@ namespace mod_eurooffice\api;
 
 use Firebase\JWT\JWT;
 use mod_eurooffice\crypt;
+use mod_eurooffice\util;
 
 /**
  * Api config class
@@ -75,7 +76,7 @@ class config {
     ) {
         global $DB, $CFG;
 
-        $this->crypt = new crypt($CFG->siteidentifier);
+        $this->crypt = new crypt(util::site_secret());
         $this->mycfg = get_config('mod_eurooffice');
 
         $fs = get_file_storage();
@@ -140,7 +141,13 @@ class config {
         $user = [];
         $user['id'] = $USER->id;
         $user['name'] = fullname($USER);
-        $userimageurl = new \moodle_url('/mod/eurooffice/userpic.php', ['id' => $USER->id, 'token' => $this->crypt->get_userid()]);
+        $userimageurl = new \moodle_url(
+            '/mod/eurooffice/userpic.php',
+            [
+                // 'id' => $USER->id,
+                'token' => $this->crypt->get_userid(),
+            ]
+        );
         $user['image'] = $userimageurl->out(false);
         $editorconfig['user'] = $user;
 

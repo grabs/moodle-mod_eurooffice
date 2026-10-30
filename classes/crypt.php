@@ -36,11 +36,11 @@ class crypt {
     public const DEFAULT_ALGORITHM = 'HS256';
 
     /**
-     * The unique siteidentifier for the hash function.
+     * The globally defined secret for the hash function.
      *
      * @var string
      */
-    private $siteidentifier;
+    private $sitesecret;
 
     /**
      * The hash algorithm
@@ -52,11 +52,11 @@ class crypt {
     /**
      * Constructor for the crypt class.
      *
-     * @param string $siteidentifier The unique site identifier for hashing
+     * @param string $sitesecret The globally defined secret for hashing
      * @param string|null $algorithm The algorithm to use for JWT (defaults to HS256)
      */
-    public function __construct($siteidentifier, $algorithm = null) {
-        $this->siteidentifier = $siteidentifier;
+    public function __construct($sitesecret, $algorithm = null) {
+        $this->sitesecret = $sitesecret;
 
         if (!empty($alg)) {
             $this->algorithm = $algorithm;
@@ -74,7 +74,7 @@ class crypt {
      */
     public function get_hash($object) {
         try {
-            return JWT::encode($object, $this->siteidentifier, $this->algorithm);
+            return JWT::encode($object, $this->sitesecret, $this->algorithm);
         } catch (\Exception $e) {
             throw new \moodle_exception('JWT secret key is too short (minimum 32 characters required).', 0, $e);
         }
@@ -94,7 +94,7 @@ class crypt {
             return [$result, 'token is empty'];
         }
         try {
-            $result = JWT::decode($hash, new Key($this->siteidentifier, $this->algorithm));
+            $result = JWT::decode($hash, new Key($this->sitesecret, $this->algorithm));
         } catch (\Exception $e) {
             $error = $e->getMessage();
         }
@@ -114,10 +114,14 @@ class crypt {
             $userid = $USER->id;
         }
 
-        $mycfg = get_config('mod_eurooffice');
         $user = $DB->get_record('user', ['id' => $userid], 'id, username, firstname, lastname, email');
-        $userstr = json_encode($user);
-        $salt = $mycfg->secret;
-        return sha1(json_encode($userstr . $salt));
+        $hash = $this->get_hash((array) $user);
+        return $hash;
+
+        // $mycfg = get_config('mod_eurooffice');
+        // $user = $DB->get_record('user', ['id' => $userid], 'id, username, firstname, lastname, email');
+        // $userstr = json_encode($user);
+        // $salt = $mycfg->secret;
+        // return sha1(json_encode($userstr . $salt));
     }
 }

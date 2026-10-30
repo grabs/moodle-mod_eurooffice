@@ -23,6 +23,8 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+use mod_eurooffice\util;
+
 // phpcs:disable moodle.Files.MoodleInternal.MoodleInternalGlobalState
 // phpcs:disable moodle.Files.RequireLogin.Missing
 
@@ -30,11 +32,11 @@ require_once(dirname(dirname(dirname(__FILE__))) . '/config.php');
 
 global $CFG;
 
-$siteidentifier = $CFG->siteidentifier;
+$sitesecret = util::site_secret();
 $userid = required_param('userid', PARAM_INT);
 $token = optional_param('token', '', PARAM_RAW);
 $action = optional_param('action', '', PARAM_RAW);
 $requestbody = file_get_contents('php://input');
 
-$api = new \mod_eurooffice\api\api($userid, $siteidentifier, $token, $action, $requestbody);
+$api = new \mod_eurooffice\api\api($userid, $sitesecret, $token, $action, $requestbody);
 $api->handle_request();

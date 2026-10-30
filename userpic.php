@@ -23,24 +23,31 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+use mod_eurooffice\util;
+
 // This script is called by the eurooffice server and does not need cookies!
 define('NO_MOODLE_COOKIES', true);
 
 require_once(__DIR__ . '/../../config.php');
 require_once($CFG->libdir . '/filelib.php');
 
-$userid = required_param('id', PARAM_INT);
+// $userid = required_param('id', PARAM_INT);
 $token = required_param('token', PARAM_TEXT);
 
-$crypt = new \mod_eurooffice\crypt($CFG->siteidentifier);
-$hash = $crypt->get_userid($userid);
-$defaultimage = $CFG->dirroot . '/pix/u/f1.png';
-
-if ($token != $hash) {
+$crypt = new \mod_eurooffice\crypt(util::site_secret());
+[$user, $error] = $crypt->read_hash($token);
+if ($error || $user === null) {
     send_file_not_found();
 }
 
-$context = \context_user::instance($userid);
+$defaultimage = $CFG->dirroot . '/pix/u/f1.png';
+
+try {
+    $context = \context_user::instance($user->id);
+} catch (\moodle_exception $e) {
+    send_file_not_found();
+}
+
 $fs = get_file_storage();
 if (!$file = $fs->get_file($context->id, 'user', 'icon', 0, '/', 'f1.jpg')) {
     if (!$file = $fs->get_file($context->id, 'user', 'icon', 0, '/', 'f1.png')) {

@@ -114,7 +114,7 @@ class api {
      * Decodes the token and request body for further processing.
      *
      * @param int $userid The user ID making the API request.
-     * @param string $siteidentifier The site identifier for cryptographic operations.
+     * @param string $sitesecret The globally defined secret for cryptographic operations.
      * @param string $token The authentication token provided in the request.
      * @param string $action The API action to be performed.
      * @param string|false $requestbody The JSON-encoded request body.
@@ -126,10 +126,10 @@ class api {
          */
         protected $userid,
         /**
-         * The site identifier for the API request
+         * The globally defined secret for the API request
          * @var string
          */
-        protected $siteidentifier,
+        protected $sitesecret,
         /**
          * The authentication token for the API request
          * @var string
@@ -155,7 +155,7 @@ class api {
         if (empty($this->token)) {
             $this->send_response(new json_response(['error' => 1], 500));
         }
-        $this->crypt = new \mod_eurooffice\crypt($siteidentifier);
+        $this->crypt = new \mod_eurooffice\crypt($sitesecret);
         [$this->tokencontent, $this->error] = $this->crypt->read_hash($this->token);
         if ($this->error || $this->tokencontent === null) {
             $this->send_response(new json_response(['error' => 1], 500));

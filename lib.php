@@ -318,25 +318,25 @@ function mod_eurooffice_output_fragment_get_editor_config($args) {
 function mod_eurooffice_output_fragment_get_user_infos($args) {
     global $DB;
 
-    $contextid = $args['contextid'] ?? 0;
+    // $contextid = $args['contextid'] ?? 0;
     $userids = $args['userids'] ?? 0;
     $cmid = $args['cmid'] ?? 0;
 
-    if (empty($contextid)) {
-        throw new \moodle_exception('Missing param "contextid"');
-    }
+    // if (empty($contextid)) {
+    //     throw new \moodle_exception('Missing param "contextid"');
+    // }
     if (empty($cmid)) {
         throw new \moodle_exception('Missing param "cmid"');
     }
 
-    $context = \context::instance_by_id($contextid);
+    // $context = \context::instance_by_id($contextid);
     $cm = $DB->get_record('course_modules', ['id' => $cmid]);
 
     $userids = explode(',', $userids);
     if (empty($userids)) {
         return '';
     }
-    $userinfo = new \mod_eurooffice\api\userinfo($userids, $context, $cm);
+    $userinfo = new \mod_eurooffice\api\userinfo($userids, $cm);
 
     return json_encode($userinfo->get_infos());
 }

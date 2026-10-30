@@ -17,6 +17,7 @@
 namespace mod_eurooffice\api;
 
 use mod_eurooffice\crypt;
+use mod_eurooffice\util;
 
 /**
  * User info class
@@ -60,7 +61,7 @@ class userinfo {
         // Fetch the course record associated with the current course module.
         $this->course = $DB->get_record('course', ['id' => $cm->course]);
         // Initialize the encryption utility with the site identifier.
-        $this->crypt = new crypt($CFG->siteidentifier);
+        $this->crypt = new crypt(util::site_secret());
     }
 
     /**
@@ -83,12 +84,12 @@ class userinfo {
         foreach ($this->userids as $userid) {
             $user = \core_user::get_user($userid);
             // Check if the current user has permission to view this profile and so the userpicture.
-            if (user_can_view_profile($user, $this->course)) {
+            if (\core\user::can_view_profile($user, $this->course)) {
                 // Generate a secure URL for the user's profile picture.
                 $userimageurl = new \moodle_url(
                     '/mod/eurooffice/userpic.php',
                     [
-                        'id' => $user->id,
+                        // 'id' => $user->id,
                         'token' => $this->crypt->get_userid($user->id),
                     ]
                 );
