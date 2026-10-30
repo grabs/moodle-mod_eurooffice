@@ -58,7 +58,7 @@ class crypt {
     public function __construct($sitesecret, $algorithm = null) {
         $this->sitesecret = $sitesecret;
 
-        if (!empty($alg)) {
+        if (!empty($algorithm)) {
             $this->algorithm = $algorithm;
         } else {
             $this->algorithm = static::DEFAULT_ALGORITHM;

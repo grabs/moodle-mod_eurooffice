@@ -56,6 +56,8 @@ class api {
     protected $requestdata;
     /** @var \stdClass */
     protected $tokencontent;
+    /** @var int */
+    protected $userid;
     /** @var string */
     protected $error;
 
@@ -121,11 +123,6 @@ class api {
      */
     public function __construct(
         /**
-         * The user ID for the API request
-         * @var int
-         */
-        protected $userid,
-        /**
          * The globally defined secret for the API request
          * @var string
          */
@@ -146,18 +143,20 @@ class api {
          */
         protected $requestbody
     ) {
-        // Validate that the action parameter is not empty.
-        if (empty($this->action)) {
-            $this->send_response(new json_response(['error' => 1], 500));
-        }
-
         // Validate that the token parameter is not empty.
         if (empty($this->token)) {
             $this->send_response(new json_response(['error' => 1], 500));
         }
+        // Get the token content by decrypting it.
         $this->crypt = new \mod_eurooffice\crypt($sitesecret);
         [$this->tokencontent, $this->error] = $this->crypt->read_hash($this->token);
         if ($this->error || $this->tokencontent === null) {
+            $this->send_response(new json_response(['error' => 1], 500));
+        }
+        $this->userid = $this->tokencontent->userid;
+
+        // Validate that the action parameter is not empty.
+        if (empty($this->action)) {
             $this->send_response(new json_response(['error' => 1], 500));
         }
 

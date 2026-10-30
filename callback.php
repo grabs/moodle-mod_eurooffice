@@ -32,11 +32,10 @@ require_once(dirname(dirname(dirname(__FILE__))) . '/config.php');
 
 global $CFG;
 
-$sitesecret = util::site_secret();
-$userid = required_param('userid', PARAM_INT);
-$token = optional_param('token', '', PARAM_RAW);
+$token = required_param('token', PARAM_RAW);
 $action = optional_param('action', '', PARAM_RAW);
 $requestbody = file_get_contents('php://input');
 
-$api = new \mod_eurooffice\api\api($userid, $sitesecret, $token, $action, $requestbody);
+$sitesecret = util::site_secret();
+$api = new \mod_eurooffice\api\api($sitesecret, $token, $action, $requestbody);
 $api->handle_request();

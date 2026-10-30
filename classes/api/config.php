@@ -115,11 +115,12 @@ class config {
         $filename = $this->file->get_filename();
         // Download identifier. Used by the document server, which want to load the document for processing.
         $filetokenparts = [
+            'userid' => $USER->id,
             'contextid' => $this->context->id,
             'pathnamehash' => $this->file->get_pathnamehash(),
         ];
         $filetoken = $this->crypt->get_hash($filetokenparts);
-        $callbackurl = new \moodle_url('/mod/eurooffice/callback.php', ['userid' => $USER->id, 'token' => $filetoken]);
+        $callbackurl = new \moodle_url('/mod/eurooffice/callback.php', ['token' => $filetoken]);
 
         $filetype = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
 
@@ -142,12 +143,7 @@ class config {
         $user['id'] = $USER->id;
         $user['name'] = fullname($USER);
         $userimageurl = new \moodle_url(
-            '/mod/eurooffice/userpic.php',
-            [
-                // 'id' => $USER->id,
-                'token' => $this->crypt->get_userid(),
-            ]
-        );
+            '/mod/eurooffice/userpic.php', ['token' => $this->crypt->get_userid()]);
         $user['image'] = $userimageurl->out(false);
         $editorconfig['user'] = $user;
 
