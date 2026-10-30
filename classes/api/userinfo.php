@@ -89,7 +89,6 @@ class userinfo {
                 $userimageurl = new \moodle_url(
                     '/mod/eurooffice/userpic.php',
                     [
-                        // 'id' => $user->id,
                         'token' => $this->crypt->get_userid($user->id),
                     ]
                 );

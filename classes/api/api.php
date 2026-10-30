@@ -89,6 +89,16 @@ class api {
         return $curl;
     }
 
+    /**
+     * Calculates an appropriate timeout value for downloading a file from a given URL.
+     *
+     * Attempts to determine the file size via a HEAD request to adjust the timeout
+     * based on the configured bitrate (or a default of 56kbps). Falls back to a
+     * default timeout of 300 seconds if the file size cannot be determined.
+     *
+     * @param string $url The URL of the file to download
+     * @return int The calculated timeout in seconds
+     */
     public static function calc_timeout($url) {
         global $CFG;
 
@@ -148,7 +158,6 @@ class api {
      * Validates the required parameters and initializes the cryptographic handler.
      * Decodes the token and request body for further processing.
      *
-     * @param int $userid The user ID making the API request.
      * @param string $sitesecret The globally defined secret for cryptographic operations.
      * @param string $token The authentication token provided in the request.
      * @param string $action The API action to be performed.

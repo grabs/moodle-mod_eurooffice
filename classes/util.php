@@ -16,7 +16,23 @@
 
 namespace mod_eurooffice;
 
+/**
+ * Utility class providing helper methods for the EuroOffice module.
+ *
+ * @package   mod_eurooffice
+ * @author    Andreas Grabs <info@grabs-edv.de>
+ * @copyright 2026 onwards Grabs EDV {@link https://www.grabs-edv.de}
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class util {
+    /**
+     * Retrieves or generates the site secret key for the EuroOffice module.
+     *
+     * If no secret exists in the module configuration, a new 100-character
+     * random string is generated and stored as the site secret.
+     *
+     * @return string The site secret key
+     */
     public static function site_secret() {
         static $secret;
         if (empty($secret)) {

@@ -31,15 +31,17 @@ define('NO_MOODLE_COOKIES', true);
 require_once(__DIR__ . '/../../config.php');
 require_once($CFG->libdir . '/filelib.php');
 
-// $userid = required_param('id', PARAM_INT);
+// Get the token. This token is a simple user object encrypted with the site secret.
 $token = required_param('token', PARAM_TEXT);
 
+// Get the user object from the token.
 $crypt = new \mod_eurooffice\crypt(util::site_secret());
 [$user, $error] = $crypt->read_hash($token);
 if ($error || $user === null) {
     send_file_not_found();
 }
 
+// The default image is used if the user has no profile picture.
 $defaultimage = $CFG->dirroot . '/pix/u/f1.png';
 
 try {
@@ -48,6 +50,7 @@ try {
     send_file_not_found();
 }
 
+// Get the user picture from the file storage.
 $fs = get_file_storage();
 if (!$file = $fs->get_file($context->id, 'user', 'icon', 0, '/', 'f1.jpg')) {
     if (!$file = $fs->get_file($context->id, 'user', 'icon', 0, '/', 'f1.png')) {

@@ -142,8 +142,7 @@ class config {
         $user = [];
         $user['id'] = $USER->id;
         $user['name'] = fullname($USER);
-        $userimageurl = new \moodle_url(
-            '/mod/eurooffice/userpic.php', ['token' => $this->crypt->get_userid()]);
+        $userimageurl = new \moodle_url('/mod/eurooffice/userpic.php', ['token' => $this->crypt->get_userid()]);
         $user['image'] = $userimageurl->out(false);
         $editorconfig['user'] = $user;
 

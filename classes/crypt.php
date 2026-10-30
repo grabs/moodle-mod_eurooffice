@@ -117,11 +117,5 @@ class crypt {
         $user = $DB->get_record('user', ['id' => $userid], 'id, username, firstname, lastname, email');
         $hash = $this->get_hash((array) $user);
         return $hash;
-
-        // $mycfg = get_config('mod_eurooffice');
-        // $user = $DB->get_record('user', ['id' => $userid], 'id, username, firstname, lastname, email');
-        // $userstr = json_encode($user);
-        // $salt = $mycfg->secret;
-        // return sha1(json_encode($userstr . $salt));
     }
 }

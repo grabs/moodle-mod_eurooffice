@@ -32,8 +32,8 @@ require_once(dirname(dirname(dirname(__FILE__))) . '/config.php');
 
 global $CFG;
 
-$token = required_param('token', PARAM_RAW);
-$action = optional_param('action', '', PARAM_RAW);
+$token = required_param('token', PARAM_TEXT);
+$action = optional_param('action', '', PARAM_TEXT);
 $requestbody = file_get_contents('php://input');
 
 $sitesecret = util::site_secret();

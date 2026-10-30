@@ -48,7 +48,7 @@ if ($hassiteconfig) {
     $helpcontent = $OUTPUT->render_from_template(
         'mod_eurooffice/explicit_warning',
         [
-            'text' => get_string('allowcollaboraserverexplicit_help','mod_eurooffice'),
+            'text' => get_string('allowcollaboraserverexplicit_help', 'mod_eurooffice'),
             'level' => 'danger',
         ]
     );
